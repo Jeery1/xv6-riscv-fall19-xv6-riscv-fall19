@@ -9,6 +9,7 @@
 #include "riscv.h"
 #include "defs.h"
 
+
 void freerange(void *pa_start, void *pa_end);
 
 extern char end[]; // first address after kernel.
@@ -27,7 +28,11 @@ void
 kinit()
 {
   initlock(&kmem.lock, "kmem");
-  freerange(end, (void*)PHYSTOP);
+
+  void *kalloc_end = (void *)((uint64)end + 64L*1024*1024);  // 64MB
+  freerange(end, kalloc_end);
+
+  bd_init(kalloc_end, (void*)PHYSTOP);
 }
 
 void

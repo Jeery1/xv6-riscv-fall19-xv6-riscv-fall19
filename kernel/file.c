@@ -16,7 +16,7 @@
 struct devsw devsw[NDEV];
 struct {
   struct spinlock lock;
-  struct file file[NFILE];
+  //struct file file[NFILE];
 } ftable;
 
 void
@@ -32,15 +32,27 @@ filealloc(void)
   struct file *f;
 
   acquire(&ftable.lock);
-  for(f = ftable.file; f < ftable.file + NFILE; f++){
-    if(f->ref == 0){
-      f->ref = 1;
-      release(&ftable.lock);
-      return f;
-    }
+  f = (struct file *)bd_malloc(sizeof(struct file));
+  if(f == 0){
+    printf("filealloc: bd_malloc failed\n");
+    release(&ftable.lock);
+    return 0;
   }
+
+  // 手动初始化字段
+  f->ref = 1;
+  f->type = FD_NONE;
+  f->readable = 0;
+  f->writable = 0;
+  f->ip = 0;
+  f->off = 0;
+  f->major = 0;
+  f->pipe = 0;
+
+  //printf("filealloc: allocated at %p\n", f);
+
   release(&ftable.lock);
-  return 0;
+  return f;
 }
 
 // Increment ref count for file f.
@@ -68,9 +80,7 @@ fileclose(struct file *f)
     release(&ftable.lock);
     return;
   }
-  ff = *f;
-  f->ref = 0;
-  f->type = FD_NONE;
+  ff = *f;            // 拷贝数据以释放锁后再处理
   release(&ftable.lock);
 
   if(ff.type == FD_PIPE){
@@ -80,6 +90,9 @@ fileclose(struct file *f)
     iput(ff.ip);
     end_op(ff.ip->dev);
   }
+
+  // 释放内存
+  bd_free((void *)f);
 }
 
 // Get metadata about file f.

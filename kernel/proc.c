@@ -199,6 +199,9 @@ uchar initcode[] = {
 void
 userinit(void)
 {
+
+  //printf(">>> userinit: starting\n");
+
   struct proc *p;
 
   p = allocproc();

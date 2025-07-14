@@ -122,6 +122,9 @@ void *addr(int k, int bi) {
 void *
 bd_malloc(uint64 nbytes)
 {
+
+  //printf("bd_malloc: trying to alloc %d bytes\n", nbytes); 
+
   int fk, k;
 
   acquire(&lock);
