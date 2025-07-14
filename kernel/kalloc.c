@@ -29,7 +29,7 @@ kinit()
 {
   initlock(&kmem.lock, "kmem");
 
-  void *kalloc_end = (void *)((uint64)end + 64L*1024*1024);  // 64MB
+  void *kalloc_end = (void *)((uint64)end + 127L*1024*1024);  // 127MB
   freerange(end, kalloc_end);
 
   bd_init(kalloc_end, (void*)PHYSTOP);
